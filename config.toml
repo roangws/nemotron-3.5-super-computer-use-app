@@ -6,14 +6,11 @@ settle_max = 1.5        # after an action, wait until the screen stops changing,
 model_image_width = 1512    # image sent to the model: 1512 = the screen in points (2x faster than full 3024 Retina)
 model_image_format = "JPEG" # JPEG uploads 2.5x smaller than PNG
 dry_run = false         # true: plan and log actions, but do not move the mouse or type
-# The API key, the voice (female or male), "speak" and "keep screenshots" are in the Settings window
+# The API key, the talk key, the voice (female or male), "speak" and "keep screenshots" are in the Settings window
 # (menu bar > Settings…) or: python src/settings.py --help
 tts_engine = "inworld-tts-2-flash"   # fastest Inworld engine on GMI (~1.0 s to first audio)
 orb_position = "bottom"              # "bottom" (above the Dock, like Wispr Flow) or "center"
 refine_clicks = true    # before each click, look again at a zoomed-in crop to fix the aim
-
-# Hold this key to talk. 50 is the macOS key code for ` (backtick / grave).
-talk_keycode = 50
 
 whisper_model = "mlx-community/whisper-large-v3-turbo"
 

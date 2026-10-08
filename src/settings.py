@@ -3,6 +3,7 @@
   python src/settings.py                         show the settings (the key is masked)
   python src/settings.py --key YOUR_GMI_KEY      save the API key
   python src/settings.py --voice male            female (Ashley) or male (Dennis)
+  python src/settings.py --talk-key right_option  the key you hold to talk (default: backtick)
   python src/settings.py --screenshots on        keep screenshots in sessions/ (default off)
 
 The GMI_API_KEY environment variable, or a .env file in the repo, wins over the saved key.
@@ -22,9 +23,19 @@ VOICES = {
     "male": {"label": "Male (Dennis)", "voice": "Dennis"},
 }
 
+# The key you hold to talk. code = macOS key code. A modifier key (Option, Command) is held alone, with no other key.
+TALK_KEYS = {
+    "backtick": {"label": "` (backtick, top left)", "spoken": "the backtick key", "short": "`", "code": 50},
+    "right_option": {"label": "Right Option ⌥", "spoken": "the right Option key", "short": "right ⌥", "code": 61, "modifier": "option"},
+    "right_command": {"label": "Right Command ⌘", "spoken": "the right Command key", "short": "right ⌘", "code": 54, "modifier": "command"},
+    "section": {"label": "§ (section, top left on some keyboards)", "spoken": "the section key", "short": "§", "code": 10},
+    "f5": {"label": "F5", "spoken": "the F5 key", "short": "F5", "code": 96},
+}
+
 DEFAULTS = {
     "gmi_api_key": "",
     "voice": "female",        # female | male
+    "talk_key": "backtick",   # see TALK_KEYS
     "speak": True,            # say each step out loud
     "save_screenshots": False,  # keep step screenshots in sessions/ (off: only the text report is kept)
 }
@@ -50,6 +61,8 @@ def load():
             pass
     if s["voice"] not in VOICES:
         s["voice"] = "female"
+    if s["talk_key"] not in TALK_KEYS:
+        s["talk_key"] = "backtick"
     return s
 
 
@@ -73,6 +86,11 @@ def voice_id(s=None):
     return VOICES[(s or load())["voice"]]["voice"]
 
 
+def talk_key(s=None):
+    """The talk key's entry in TALK_KEYS."""
+    return TALK_KEYS[(s or load())["talk_key"]]
+
+
 def mask(key):
     return (key[:4] + "…" + key[-4:]) if len(key) > 12 else ("set" if key else "not set")
 
@@ -85,6 +103,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Nemotron Agent settings")
     ap.add_argument("--key", help="your GMI Cloud API key (get one at %s)" % KEY_URL)
     ap.add_argument("--voice", choices=list(VOICES))
+    ap.add_argument("--talk-key", choices=list(TALK_KEYS))
     ap.add_argument("--speak", choices=["on", "off"])
     ap.add_argument("--screenshots", choices=["on", "off"])
     a = ap.parse_args()
@@ -93,6 +112,8 @@ if __name__ == "__main__":
         s["gmi_api_key"] = a.key.strip()
     if a.voice:
         s["voice"] = a.voice
+    if a.talk_key:
+        s["talk_key"] = a.talk_key
     if a.speak:
         s["speak"] = a.speak == "on"
     if a.screenshots:
@@ -102,5 +123,6 @@ if __name__ == "__main__":
     print(f"settings file: {paths.SETTINGS}")
     print(f"GMI API key:   {mask(api_key())}" + ("  (from environment)" if os.environ.get("GMI_API_KEY") else ""))
     print(f"voice:         {VOICES[s['voice']]['label']}")
+    print(f"talk key:      {TALK_KEYS[s['talk_key']]['label']}")
     print(f"speak steps:   {'on' if s['speak'] else 'off'}")
     print(f"screenshots:   {'kept' if s['save_screenshots'] else 'not kept'}")

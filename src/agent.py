@@ -100,7 +100,7 @@ def speaker():
 
 
 def apply_settings(new=None):
-    """Use new settings at once (voice, speak, screenshots). The API key is read on every call."""
+    """Use new settings at once (talk key, voice, speak, screenshots). The API key is read on every call."""
     SETTINGS.update(new or settings.load())
     if _speaker is not None:
         _speaker.voice = settings.voice_id(SETTINGS)

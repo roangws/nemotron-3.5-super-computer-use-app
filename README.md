@@ -4,9 +4,12 @@
 
 **Hold the `` ` `` key, say a task, let go. The agent looks at your screen and uses the mouse and keyboard until the task is done.**
 
+<p align="center"><img src="docs/demo.gif" alt="Demo: you say 'Open Safari and search Google for the Golden Gate Bridge', the orb listens, Safari opens and the search runs" width="800"></p>
+<p align="center"><sub>A short animation of one task. The talk key is <code>`</code> by default. You can change it in Settings.</sub></p>
+
 Nemotron Agent is a free, open-source **AI computer-use agent for Mac**. It runs **NVIDIA Nemotron 3.5 Super VL** (a vision-language model) on **GMI Cloud**. You control it with your voice, from the menu bar. Speech-to-text runs on your Mac.
 
-- 🎙️ **Voice control for macOS.** Push to talk with `` ` ``. Whisper turns your words into text on your Mac.
+- 🎙️ **Voice control for macOS.** Push to talk with `` ` `` (or a key you choose). Whisper turns your words into text on your Mac.
 - 🖱️ **Real computer use.** It clicks, types, presses shortcuts, scrolls and opens apps. It works in any app, not only the browser.
 - 🔊 **Talks back.** A female or a male voice says each step. You pick in Settings.
 - 🛑 **Safe by default.** Esc stops it at once. It asks before it sends, deletes, buys or posts. It never types passwords.
@@ -79,6 +82,7 @@ Menu bar orb → **Settings…** (or press `⌘,` while the menu is open).
 | Setting | What it does | Default |
 |---|---|---|
 | GMI Cloud API key | Your key for Nemotron and the voice. It is saved only on your Mac (file mode 600). | empty |
+| Hold this key to talk | `` ` `` (backtick), Right Option ⌥, Right Command ⌘, § or F5. | `` ` `` |
 | Voice | **Female (Ashley)** or **Male (Dennis)**. Click **▶ Play sample** to hear it. | Female |
 | Say each step out loud | Nemo says each step, like "Opening Safari". | on |
 | Keep screenshots of each task | On: each task folder keeps the screenshots and your voice clip. Off: only the text log. | off |
@@ -89,22 +93,23 @@ You can also use the command line:
 .venv/bin/python src/settings.py                    # show the settings
 .venv/bin/python src/settings.py --key YOUR_KEY     # save the API key
 .venv/bin/python src/settings.py --voice male       # female | male
+.venv/bin/python src/settings.py --talk-key right_option   # backtick | right_option | right_command | section | f5
 .venv/bin/python src/settings.py --screenshots on   # on | off
 ```
 
 A `GMI_API_KEY` environment variable, or a `.env` file in this folder, wins over the saved key. See `.env.example`.
 
-Advanced settings (max steps, risky words, the talk key and more) are in [`config.toml`](config.toml).
+Advanced settings (max steps, risky words and more) are in [`config.toml`](config.toml).
 
 ## How to use it
 
 | Do this | What happens |
 |---|---|
-| Hold `` ` ``, speak, let go | It turns your words into text and runs the task. The `` ` `` key does not type. |
+| Hold `` ` ``, speak, let go | It turns your words into text and runs the task. The talk key does not type. |
 | Menu → **Type a task…** | Type a task instead of speaking it. |
 | Press **Esc** | Stops the task at once. |
 | Push the mouse into a screen corner | Emergency stop. |
-| Menu → **Agent On** | Turn it off and `` ` `` types as normal again. |
+| Menu → **Agent On** | Turn it off and the talk key works as normal again. |
 | Menu → **Dry run** | Plans the steps but does not click or type. |
 | Menu → **Open last report** | Shows each step and why it did it. |
 
@@ -189,9 +194,9 @@ install.sh      one-step setup
 
 **How is it different from Claude computer use or OpenAI Operator?** It is a small open-source agent you run on your own Mac. It uses an open-weight model, NVIDIA Nemotron 3.5 Super VL, and works in any app, not only in a browser.
 
-**Can I change the talk key?** Yes. Set `talk_keycode` in `config.toml` (50 is `` ` ``).
+**Can I change the talk key?** Yes. Open Settings and pick one under **Hold this key to talk**: `` ` `` (default), Right Option, Right Command, § or F5. Right Option is good if you type a lot of backticks, for example in code.
 
-**It does not hear the `` ` `` key.** Turn on Accessibility and Input Monitoring for Nemotron Agent, then quit and open the app again.
+**It does not hear the talk key.** Turn on Accessibility and Input Monitoring for Nemotron Agent, then quit and open the app again.
 
 **It says "No GMI API key".** Open Settings and paste your key from [console.gmicloud.ai/user-console/ie](https://console.gmicloud.ai/user-console/ie).
 

@@ -3,7 +3,8 @@
   python app.py
 
 - Menu bar icon with an On/Off switch.
-- When On: hold ` (backtick) and speak a task, release to run it. The key press does not type.
+- When On: hold the talk key (default ` backtick; change it in Settings) and speak a task, release to run it.
+  The key press does not type.
 - While it listens, works or talks, the orb shows at the bottom center and pulses with the voice.
 - Stop a running task: press Esc once, choose "Stop task" in the menu, or slam the mouse into a screen corner.
 """
@@ -32,7 +33,7 @@ import screen
 import settings
 import voice
 from orb import Orb
-from agent import CONFIG, Agent, Hooks, apply_settings, say, speaker
+from agent import CONFIG, SETTINGS, Agent, Hooks, apply_settings, say, speaker
 from paths import ASSETS, LOG, SESSIONS
 
 ESC = 53
@@ -56,6 +57,11 @@ def menubar_frames(step=3, px=36):
 
 
 ICON = NSImage.alloc().initWithContentsOfFile_(os.path.join(ASSETS, "AppIcon-1024.png"))
+
+
+def k():
+    """Short name of the talk key, for messages: ` or right ⌥."""
+    return settings.talk_key(SETTINGS)["short"]
 
 
 def new_alert():
@@ -105,10 +111,10 @@ class AppDelegate(NSObject):
         NSRunLoop.currentRunLoop().addTimer_forMode_(t, NSRunLoopCommonModes)
         self.refresh()
         if not self.tap_ok:
-            self.set_status("idle", "Needs Accessibility + Input Monitoring permission for the ` key")
+            self.set_status("idle", f"Needs Accessibility + Input Monitoring permission for the {k()} key")
         threading.Thread(target=self.warm_whisper, daemon=True).start()
-        print("Nemotron Agent running. Menu bar icon: top right. Hold ` to talk.", flush=True)
-        print("key tap (` and Esc):", "OK" if self.tap_ok else
+        print(f"Nemotron Agent running. Menu bar icon: top right. Hold {k()} to talk.", flush=True)
+        print(f"key tap ({k()} and Esc):", "OK" if self.tap_ok else
               "NO PERMISSION - allow Nemotron Agent in System Settings > Privacy & Security > Accessibility and Input Monitoring",
               flush=True)
 
@@ -194,7 +200,8 @@ class AppDelegate(NSObject):
     # ---------- keyboard ----------
     @objc.python_method
     def install_key_tap(self):
-        mask = Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown) | Quartz.CGEventMaskBit(Quartz.kCGEventKeyUp)
+        mask = (Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown) | Quartz.CGEventMaskBit(Quartz.kCGEventKeyUp)
+                | Quartz.CGEventMaskBit(Quartz.kCGEventFlagsChanged))  # modifier talk keys (right Option, right Command)
         self._tap_cb = self.on_key_event  # keep a reference
         self.tap = Quartz.CGEventTapCreate(Quartz.kCGSessionEventTap, Quartz.kCGHeadInsertEventTap,
                                            Quartz.kCGEventTapOptionDefault, mask, self._tap_cb, None)
@@ -217,9 +224,22 @@ class AppDelegate(NSObject):
             if code == ESC and etype == Quartz.kCGEventKeyDown and self.busy() and not self.pending:
                 self.stopTask_(None)  # one Esc stops the task at once
                 return event
-            if code != CONFIG["talk_keycode"] or not self.enabled:
+            tk = settings.talk_key(SETTINGS)
+            if code != tk["code"] or not self.enabled:
                 return event
             flags = Quartz.CGEventGetFlags(event)
+            if tk.get("modifier"):
+                if etype != Quartz.kCGEventFlagsChanged:
+                    return event
+                bit = Quartz.kCGEventFlagMaskAlternate if tk["modifier"] == "option" else Quartz.kCGEventFlagMaskCommand
+                down = bool(flags & bit)
+                if down and not self.recording and (not self.busy() or self.pending):
+                    self.start_listening()
+                elif not down and self.recording:
+                    self.stop_listening()
+                return event  # never swallow a modifier: other apps must see it go up
+            if etype == Quartz.kCGEventFlagsChanged:
+                return event
             mods = (Quartz.kCGEventFlagMaskCommand | Quartz.kCGEventFlagMaskControl |
                     Quartz.kCGEventFlagMaskAlternate | Quartz.kCGEventFlagMaskShift)
             if flags & mods:
@@ -229,7 +249,7 @@ class AppDelegate(NSObject):
                     self.start_listening()
             elif self.recording:
                 self.stop_listening()
-            return None  # swallow the ` so it does not type
+            return None  # swallow the talk key so it does not type
         except Exception:
             traceback.print_exc()
             return event
@@ -246,7 +266,7 @@ class AppDelegate(NSObject):
                 self.recording = False
                 self.set_status("idle", f"Microphone error: {e}")
                 return
-        self.state, self.status_text = "listening", "Listening… release ` when done"
+        self.state, self.status_text = "listening", f"Listening… release {k()} when done"
         self.refresh()
 
     @objc.python_method
@@ -264,7 +284,7 @@ class AppDelegate(NSObject):
     @objc.python_method
     def handle_audio(self, audio, answering):
         if not voice.is_speech(audio):
-            self.set_status("confirm" if answering else "idle", "Didn't hear anything. Hold ` and speak.")
+            self.set_status("confirm" if answering else "idle", f"Didn't hear anything. Hold {k()} and speak.")
             return
         wav = os.path.join(tempfile.gettempdir(), f"nemo-{int(time.time())}.wav")
         voice.save_wav(audio, wav)
@@ -334,7 +354,7 @@ class AppDelegate(NSObject):
         front = NSWorkspace.sharedWorkspace().frontmostApplication()
         alert = new_alert()
         alert.setMessageText_("Nemotron Agent" + (" needs your OK" if kind == "confirm" else " has a question"))
-        alert.setInformativeText_(message + "\n\nOr hold ` and say " + ("yes or no." if kind == "confirm" else "your answer."))
+        alert.setInformativeText_(message + f"\n\nOr hold {k()} and say " + ("yes or no." if kind == "confirm" else "your answer."))
         field = None
         if kind == "confirm":
             alert.addButtonWithTitle_("Allow")
@@ -377,7 +397,7 @@ class AppDelegate(NSObject):
         self.enabled = not self.enabled
         if not self.enabled and self.busy():
             self.agent.stop()
-        self.status_text = "Ready — hold ` to talk" if self.enabled else "Off — ` types normally"
+        self.status_text = f"Ready — hold {k()} to talk" if self.enabled else "Off — the talk key works as normal"
         self.refresh()
 
     def toggleDry_(self, _):
@@ -407,7 +427,7 @@ class AppDelegate(NSObject):
     def openSettings_(self, _):
         """API key, voice and switches. Saved to settings.json; used at once, no restart."""
         s = settings.load()
-        W, H = 400, 214
+        W, H = 400, 272
         view = NSView.alloc().initWithFrame_(NSMakeRect(0, 0, W, H))
 
         def label(text, y, size=13, x=0, w=W):
@@ -425,15 +445,23 @@ class AppDelegate(NSObject):
         get.setFrame_(NSMakeRect(-6, H - 80, 290, 30))
         view.addSubview_(get)
 
-        label("Voice", H - 108)
-        pop = NSPopUpButton.alloc().initWithFrame_pullsDown_(NSMakeRect(-3, H - 136, 220, 26), False)
+        label("Hold this key to talk", H - 108)
+        kpop = NSPopUpButton.alloc().initWithFrame_pullsDown_(NSMakeRect(-3, H - 136, 300, 26), False)
+        keys = list(settings.TALK_KEYS)
+        for n in keys:
+            kpop.addItemWithTitle_(settings.TALK_KEYS[n]["label"])
+        kpop.selectItemAtIndex_(keys.index(s["talk_key"]))
+        view.addSubview_(kpop)
+
+        label("Voice", H - 166)
+        pop = NSPopUpButton.alloc().initWithFrame_pullsDown_(NSMakeRect(-3, H - 194, 220, 26), False)
         names = list(settings.VOICES)
         for n in names:
             pop.addItemWithTitle_(settings.VOICES[n]["label"])
         pop.selectItemAtIndex_(names.index(s["voice"]))
         view.addSubview_(pop)
         play = NSButton.buttonWithTitle_target_action_("▶ Play sample", self, "playSample:")
-        play.setFrame_(NSMakeRect(222, H - 138, 140, 30))
+        play.setFrame_(NSMakeRect(222, H - 196, 140, 30))
         view.addSubview_(play)
 
         def check(text, on, y):
@@ -443,8 +471,8 @@ class AppDelegate(NSObject):
             view.addSubview_(b)
             return b
 
-        speak = check("Say each step out loud", s["speak"], H - 170)
-        shots = check("Keep screenshots of each task (off: text log only)", s["save_screenshots"], H - 196)
+        speak = check("Say each step out loud", s["speak"], H - 228)
+        shots = check("Keep screenshots of each task (off: text log only)", s["save_screenshots"], H - 254)
 
         alert = new_alert()
         alert.setMessageText_("Nemotron Agent Settings")
@@ -459,14 +487,15 @@ class AppDelegate(NSObject):
             return
         had_key = bool(settings.api_key())
         s.update(gmi_api_key=key.stringValue().strip(), voice=names[pop.indexOfSelectedItem()],
+                 talk_key=keys[kpop.indexOfSelectedItem()],
                  speak=bool(speak.state()), save_screenshots=bool(shots.state()))
         settings.save(s)
         apply_settings(s)
         if settings.api_key():
             self.spk.prefetch(PREFETCH)
-            self.set_status("idle", "Ready — hold ` to talk" if self.enabled else "Off — ` types normally")
+            self.set_status("idle", f"Ready — hold {k()} to talk" if self.enabled else "Off — the talk key works as normal")
             if not had_key:
-                say("Hi, I am Nemo. Hold the backtick key and tell me what to do.")
+                say(f"Hi, I am Nemo. Hold {settings.talk_key(s)['spoken']} and tell me what to do.")
         else:
             self.set_status("idle", "Add your GMI API key in Settings")
 

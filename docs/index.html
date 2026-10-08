@@ -142,11 +142,17 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--mute);fo
   </div>
 </header>
 
+<section id="demo">
+  <h2>See it work</h2>
+  <p class="sub">You say one sentence. Nemo opens Safari and runs the search.</p>
+  <video class="diagram" src="demo.mp4" poster="demo-poster.png" autoplay muted loop playsinline aria-label="Demo: the orb listens, Safari opens and a Google search for the Golden Gate Bridge runs"></video>
+</section>
+
 <section>
   <h2>What it does</h2>
   <p class="sub">An AI agent that works in any Mac app, not only in a browser.</p>
   <div class="grid">
-    <div class="card"><h3>🎙️ Voice first</h3><p>Push to talk with <kbd>`</kbd>. Whisper turns speech into text on your Mac.</p></div>
+    <div class="card"><h3>🎙️ Voice first</h3><p>Push to talk with <kbd>`</kbd>, or pick another key. Whisper turns speech into text on your Mac.</p></div>
     <div class="card"><h3>🖱️ Real computer use</h3><p>It clicks, types, uses shortcuts, scrolls and opens apps.</p></div>
     <div class="card"><h3>🔊 Talks back</h3><p>A female or male voice says each step. Pick one in Settings.</p></div>
     <div class="card"><h3>🛑 Safe</h3><p>Esc stops it at once. It asks before it sends, deletes, buys or posts.</p></div>
@@ -178,6 +184,7 @@ cd nemotron-3.5-super-computer-use-app
       <table>
         <tr><th>Setting</th><th>What it does</th></tr>
         <tr><td>GMI Cloud API key</td><td>Your key. Saved only on your Mac.</td></tr>
+        <tr><td>Talk key</td><td><kbd>`</kbd> by default. Or Right Option, Right Command, § or F5.</td></tr>
         <tr><td>Voice</td><td>Female (Ashley) or Male (Dennis). Play a sample first.</td></tr>
         <tr><td>Say each step</td><td>Nemo says what it does, like “Opening Safari”.</td></tr>
         <tr><td>Keep screenshots</td><td>Off by default. Off: a text log only.</td></tr>
@@ -199,7 +206,8 @@ cd nemotron-3.5-super-computer-use-app
   <details><summary>Which Macs work?</summary><p>Apple Silicon (M1 or newer) with macOS 13 or newer. Intel Macs, Windows and Linux are not supported now.</p></details>
   <details><summary>How is it different from Claude computer use or OpenAI Operator?</summary><p>It is a small open-source agent you run on your own Mac, with an open-weight model (NVIDIA Nemotron 3.5 Super VL). It works in any app, not only in a browser.</p></details>
   <details><summary>What data leaves my Mac?</summary><p>Each screenshot goes to GMI Cloud to pick the next action, and short spoken lines go to the voice service. Your voice is turned into text on your Mac.</p></details>
-  <details><summary>It does not hear the ` key.</summary><p>Turn on Accessibility and Input Monitoring for Nemotron Agent, then quit and open the app again.</p></details>
+  <details><summary>Can I change the talk key?</summary><p>Yes. In Settings, pick ` (default), Right Option, Right Command, § or F5.</p></details>
+  <details><summary>It does not hear the talk key.</summary><p>Turn on Accessibility and Input Monitoring for Nemotron Agent, then quit and open the app again.</p></details>
 </section>
 
 <footer>
