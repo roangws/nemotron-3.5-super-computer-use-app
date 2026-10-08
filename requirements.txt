@@ -1,0 +1,14 @@
+# Nemotron Agent (macOS, Apple Silicon, Python 3.11+)
+pyautogui>=0.9.54
+pillow>=10.0
+pynput>=1.7
+sounddevice>=0.4.6
+soundfile>=0.12
+numpy>=1.26
+mlx-whisper>=0.4
+pyobjc-core>=10.0
+pyobjc-framework-Cocoa>=10.0
+pyobjc-framework-Quartz>=10.0
+pyobjc-framework-ApplicationServices>=10.0
+pyyaml>=6.0
+pytest>=8.0

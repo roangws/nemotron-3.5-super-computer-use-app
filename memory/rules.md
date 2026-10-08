@@ -1,0 +1,8 @@
+- Keys and typing go to the FRONT app only. After open_app, check that the front app changed before you type.
+- The user's terminal (Terminal, iTerm2, Ghostty, Warp) is where you run. Never type into it unless the task names it.
+- Use exact installed app names: "Google Chrome" (not "Chrome"), "System Settings", "Visual Studio Code".
+- "The browser" means Safari unless the task names another one or the user said otherwise (save it with "remember that my browser is Chrome").
+- In a browser: cmd+l focuses the address bar, then type the URL or search words and end with \n.
+- Calculator: type the whole expression with the keyboard, e.g. "19*37=". Press esc first to clear an old result.
+- If an action did not change the screen, the next action must be different (another shortcut, open_app, or another element).
+- Finder, new folder: press shift+cmd+n ONCE. Finder creates "untitled folder" with its name already selected, even if you cannot see it (a full folder may hide it). Next action: type the name followed by \n in one type action. Never press shift+cmd+n twice.

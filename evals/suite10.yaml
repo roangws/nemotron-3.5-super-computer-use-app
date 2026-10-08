@@ -1,0 +1,42 @@
+# 10 tests with objective checks. Run: python agent.py --eval --suite suite10 [--no-memory]
+# setup: runs before the task. Every task starts with Terminal in front, the trap from the failed Bayhouse run.
+# check: a shell command that exits 0 only if the Mac really is in the asked state (the model's "done" is not trusted).
+# No browser is ever quit: that would close your own tabs.
+- id: 1
+  task: Open Chrome and search Google for Bayhouse Creative.
+  setup: open -a "Google Chrome" "about:blank"; sleep 2; osascript -e 'tell app "Terminal" to activate'
+  check: evals/chrome_titles.sh | grep -iE 'bayhouse.*(google search|pesquisa google)'
+- id: 2
+  task: Open Chrome and go to claude.ai.
+  setup: open -a "Google Chrome" "about:blank"; sleep 2; osascript -e 'tell app "Terminal" to activate'
+  check: evals/chrome_titles.sh | grep -i 'claude'
+- id: 3
+  task: Open Chrome and go to github.com/trending.
+  setup: open -a "Google Chrome" "about:blank"; sleep 2; osascript -e 'tell app "Terminal" to activate'
+  check: evals/chrome_titles.sh | grep -i 'trending'
+- id: 4
+  task: Open the browser and search Google for GMI Cloud.
+  setup: open -a "Google Chrome" "about:blank"; open -a Safari "about:blank"; sleep 2; osascript -e 'tell app "Terminal" to activate'
+  check: (osascript -e 'tell app "Safari" to get URL of current tab of front window'; evals/chrome_titles.sh) 2>/dev/null | grep -iE '(google\.[a-z.]+/search.*gmi)|(gmi.*(google search|pesquisa google))'
+- id: 5
+  task: In Safari, go to wikipedia.org and search Wikipedia for Golden Gate Bridge.
+  check: osascript -e 'tell app "Safari" to get URL of current tab of front window' | grep -iE 'wikipedia\.org.*golden.gate'
+- id: 6
+  task: Open System Settings and go to the Sound page.
+  check: osascript -e 'tell app "System Events" to get name of window 1 of process "System Settings"' | grep -x 'Sound'
+  cleanup: osascript -e 'quit app "System Settings"'
+- id: 7
+  task: Open the Downloads folder in Finder.
+  check: osascript -e 'tell app "Finder" to get name of front Finder window' | grep -x 'Downloads'
+- id: 8
+  task: Make a new folder on the Desktop named nemo-eval.
+  check: test -d ~/Desktop/nemo-eval
+  cleanup: rmdir ~/Desktop/nemo-eval* ~/Desktop/untitled\ folder* 2>/dev/null; true   # empty folders only
+- id: 9
+  task: Open TextEdit, make a new document and type Nemotron memory test.
+  check: osascript -e 'tell app "TextEdit" to get text of front document' | grep -i 'nemotron memory test'
+  cleanup: osascript -e 'tell app "TextEdit" to close every document saving no' -e 'quit app "TextEdit"'
+- id: 10
+  task: Open Activity Monitor using Spotlight.
+  check: osascript -e 'tell app "System Events" to get name of first process whose frontmost is true' | grep -x 'Activity Monitor'
+  cleanup: osascript -e 'quit app "Activity Monitor"'

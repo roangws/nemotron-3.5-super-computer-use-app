@@ -1,0 +1,33 @@
+# Nemotron Agent: advanced settings (defaults are fine for most people)
+
+max_steps = 25          # stop after this many actions
+history_steps = 8       # past steps sent to the model as text
+settle_max = 1.5        # after an action, wait until the screen stops changing, at most this long (4 s after open_app)
+model_image_width = 1512    # image sent to the model: 1512 = the screen in points (2x faster than full 3024 Retina)
+model_image_format = "JPEG" # JPEG uploads 2.5x smaller than PNG
+dry_run = false         # true: plan and log actions, but do not move the mouse or type
+# The API key, the voice (female or male), "speak" and "keep screenshots" are in the Settings window
+# (menu bar > Settings…) or: python src/settings.py --help
+tts_engine = "inworld-tts-2-flash"   # fastest Inworld engine on GMI (~1.0 s to first audio)
+orb_position = "bottom"              # "bottom" (above the Dock, like Wispr Flow) or "center"
+refine_clicks = true    # before each click, look again at a zoomed-in crop to fix the aim
+
+# Hold this key to talk. 50 is the macOS key code for ` (backtick / grave).
+talk_keycode = 50
+
+whisper_model = "mlx-community/whisper-large-v3-turbo"
+
+# Ask before any action whose text or target contains one of these words.
+risky_words = ["send", "delete", "remove", "buy", "pay", "submit", "post", "publish", "transfer", "password", "purchase", "erase", "empty trash"]
+
+# Thinking (slow, smarter) is used only to recover when stuck.
+think_after_no_change = 2   # consecutive steps with no screen change
+think_after_bad_json = 2    # consecutive invalid replies
+
+# Keys and typing are blocked while one of these apps is in front (unless the task names it).
+# This is where the agent itself runs, so a wrong keystroke here lands in your terminal.
+protected_apps = ["Terminal", "iTerm2", "Ghostty", "Warp", "Alacritty", "kitty", "Claude", "Code", "Cursor"]
+
+# After each task, one model call (thinking on) updates memory/facts.jsonl. Faults and recipes are always saved.
+reflect = true
+memory = true           # false: no recall and no learning (used for the baseline eval)
